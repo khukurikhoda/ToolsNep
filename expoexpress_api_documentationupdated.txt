@@ -1,0 +1,318 @@
+﻿Expo Express API Documentation
+Version 1.1
+1. At‑a‑Glance
+ItemValuePrimary Base URLhttps://developer.expoexpressnp.com/v1/Auth modelAPIKEY field in JSON body for POST endpointsContent‑Typeapplication/jsonEncodingUTF‑8Time zoneAsia/Kathmandu (UTC +05:45)Rate limits / paginationNot documented; check nextPageStatus codesStandard HTTP (200, 400, 401, 404, 500)2. Conventions
+Standard success envelope:
+{
+  ...,
+  "status": 200,
+  "message": "Human‑readable",
+  "nextPage": 0
+}
+Standard error envelope:
+{
+  "status": 400,
+  "message": "Detailed error string"
+}
+3. Authentication
+3.1 Obtain an API key
+Expo Express issues API keys per merchant account (contact support).
+Example: 92829a36-2996-4757-a531-29985bf19037
+3.2 Passing the key
+Embed the key at the top level for every POST request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  /* endpoint‑specific fields */
+}
+4. Endpoint Catalog
+4.1 Master Data
+NameMethod & PathDescriptionCitiesGET /CitiesList of serviceable citiesCoveredAreasGET /CoveredAreasAll delivery areasCoveredAreas FilterGET /CoveredAreas/{city}Areas within a cityPackageTypeGET /PackageTypePackage categoriesServiceableCoveredAreas GET/ServiceableCoveredAreas/{serviceName}List of serviceable areas by ServiceType ServiceableCoveredAreas FilterGET/ServiceableCoveredAreas/{city}/{serviceName}Areas within a city by ServiceType4.2 Shipment Lifecycle
+* Create Shipments (POST /CreateShipments)
+* Track Shipments (POST /TrackShipments)
+* Print Labels (POST /PrintLabels)
+4.3 Ancillary Services
+* DomesticRateCalculation (POST /DomesticRateCalculation)
+* CreatePickup (POST /CreatePickup)
+* CancelPickup (POST /CancelPickup)
+Cities
+MethodGETPath/CitiesAuthenticationNoneDescriptionReturns the master list of serviceable cities.Sample Request:
+GET https://developer.expoexpressnp.com/v1/Cities
+Sample Response:
+{
+  "Cities": [{
+      "CityCode": "CBK-0055",
+      "City": "Amargadhi",
+      "District": "Dadeldhura",
+      "Province": "SudurPaschim",
+      "Country": "Nepal",
+      "ZipCode": "10300"}], 
+ "status": 200,  
+ "message": "Cities Fetched Successfully", 
+ "nextPage": 0
+}
+
+CoveredAreas
+MethodGETPath/CoveredAreasAuthenticationNoneDescriptionReturns every delivery area across all cities.Sample Request:
+GET https://developer.expoexpressnp.com/v1/CoveredAreas
+Sample Response:
+{
+  "CoveredAreas": [{
+      "AreaCode": "ABKB-005503167",
+      "Area": "Baghbazar",
+      "Zipcode": "10300",
+      "District": "Dadeldhura",
+      "AddressLine1": "Bagbazar",
+      "LatLong": "29.2990951 , 80.58851109999999",
+      "IsRemote": false,
+      "City": "Amargadhi",
+      "CityCode": "CBK-0055" }],
+  "status": 200,  
+  "message": "Covered Areas Fetched Successfully",
+  "nextPage": 0
+}
+CoveredAreas Filter
+MethodGETPath/CoveredAreas/{city}AuthenticationNoneDescriptionReturns the areas for a single city (`{city}` URL‑encoded).Sample Request:
+GET https://developer.expoexpressnp.com/v1/CoveredAreas/Amargadhi
+Sample Response:
+{
+  "CoveredAreas": [{
+      "AreaCode": "ABKB-005503167",
+      "Area": "Baghbazar",
+      "Zipcode": "10300",
+      "District": "Dadeldhura",
+      "AddressLine1": "Bagbazar",
+      "LatLong": "29.2990951 , 80.58851109999999",
+      "IsRemote": false,
+      "City": "Amargadhi",
+      "CityCode": "CBK-0055" }],
+  "status": 200,  "message": "Covered Areas Fetched Successfully",
+  "nextPage": 0
+}
+
+
+Serviceable Covered Areas 
+MethodGETPath/ServiceableCoveredAreas /{serviceType}AuthenticationNoneDescriptionReturns the areas for a single servicetype (`{serviceType }` URL‑encoded).Sample Request:
+GET https://developer.expoexpressnp.com/v1/ServiceableCoveredAreas/ONP
+Sample Response:
+ "CoveredAreas": [{
+            "AreaCode": "AGBB-004200061",
+            "Area": "Bagechaur",
+            "Zipcode": "33300",
+            "District": "Baglung",
+            "AddressLine1": "Bagechaur",
+            "LatLong": "0 , 0",
+            "IsRemote": false,
+            "City": "Baglung",
+            "CityCode": "CGB-0042",
+            "Service": "ONP" }],
+  "status": 200,
+  "message": "Covered Areas Fetched Successfully",
+  "nextPage": 0
+}
+Serviceable Covered Areas Filter
+MethodGETPath/ServiceableCoveredAreas /{city}/{serviceType}AuthenticationNoneDescriptionReturns the areas for a single city and single city (`{city}/{serviceType }` URL‑encoded).Sample Request:
+GET https://developer.expoexpressnp.com/v1/ServiceableCoveredAreas/Baglung/ONP
+Sample Response:
+ "CoveredAreas": [
+        {
+            "AreaCode": "AGBB-004200061",
+            "Area": "Bagechaur",
+            "Zipcode": "33300",
+            "District": "Baglung",
+            "AddressLine1": "Bagechaur",
+            "LatLong": "0 , 0",
+            "IsRemote": false,
+            "City": "Baglung",
+            "CityCode": "CGB-0042",
+            "Service": "ONP"
+        }
+  ],
+  "status": 200,
+  "message": "Covered Areas Fetched Successfully",
+  "nextPage": 0
+}
+
+
+Assigned Service Type
+MethodPOSTPath/AssignedServiceTypeAuthenticationAPIKEYDescriptionLists carrier service products enabled for the merchant.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY"
+}
+Sample Response:
+{
+  "ServiceTypes": [
+    { "CustomName": "Home Delivery", "Name": "ONP", "AssignedDate": "2025-05-18" },
+    { "CustomName": "Smartpost", "Name": "FIX", "AssignedDate": "2025-05-18" }
+  ],
+  "status": 200,
+  "message": "Assigned Service Type Fetched Successfully"
+}
+
+PackageType
+MethodGETPath/PackageTypeAuthenticationNoneDescriptionLists supported package categories.Sample Request:
+GET https://developer.expoexpressnp.com/v1/PackageType
+Sample Response:
+{
+  "PackageType": [
+   { "PackageName": "Document", "PackageAlias": "Document" },
+    { "PackageName": "Parcel", "PackageAlias": "Parcel" }
+  ],
+  "status": 200,
+  "message": "Package Type Fetched Successfully",
+  "nextPage": 0
+}
+
+
+Create Shipments
+MethodPOSTPath/CreateShipmentsAuthenticationAPIKEYDescriptionCreates one or more shipments and returns waybill numbers.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "Shipments": [
+    {
+      "ServiceType": "ONP",
+      "Reference": "REF123456",
+      "PrimaryPhoneNo": "1234567890",
+      "OptionalPhoneNo": "0987654321",
+      "CustomerName": "John Doe",
+      "CustomerEmail": "john.doe@example.com",
+      "City": "Baglung",
+      "Area": "Bagechaur",
+      "Landmark": "Central Park",
+      "PackageType": "DOCUMENT",
+      "GoodsValue": 250.75,
+      "TotalWeight": 1.5,
+      "ProductCode": "PROD001",
+      "CODAmount": 100.00,
+      "DeliveryInstruction": "Leave at the front desk"
+    }
+  ]
+}
+Sample Response:
+{
+    "data": {
+        "shipments": [
+            "__HAWB NUMBER__"
+        ]
+    },
+    "status": 200,
+    "message": "Shipment Created Successfully !!!",
+    "nextPage": 0
+}
+
+Track Shipments
+MethodPOSTPath/TrackShipmentsAuthenticationAPIKEYDescriptionFetches tracking information for given waybill numbers.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "Shipments": ["49621966041"],
+  "GetLastTrackingUpdateOnly": true
+}
+Sample Response:
+{
+  "HasErrors": false,
+  "TrackingResults": [
+    {
+      "Key": "_HAWB__",
+      "TrackingLink": "__TrackingLink__",
+
+      "Value": [
+        {
+          "WaybillNumber": "49621966041",
+          "UpdateCode": "SH005",
+          "UpdateDescription": "Delivered",
+          "UpdateDateTime": "2025-06-12T12:48:07",
+          "UpdateLocation": "Dhading, Nepal",
+          "Comments": "Delivered",
+          "GrossWeight": "0.5",
+          "ChargeableWeight": "0.5",
+          "WeightUnit": "KG",
+          "UpdateTimeZone": "GMT+00:00"
+        }
+      ]
+    }
+  ]
+}
+Print Labels
+MethodPOSTPath/PrintLabelsAuthenticationAPIKEYDescriptionReturns a PDF of shipping labels for printing.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "Shipments": ["49621966041"]
+}
+Sample Response:
+DIRECT PDF WILL APPEAR
+
+
+DomesticRateCalculation
+MethodPOSTPath/DomesticRateCalculationAuthenticationAPIKEYDescriptionCalculates shipping cost before booking.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "DestinationAddress": { "City": "Waling", "Area": "Bhumre" },
+  "ShipmentDetails": { "Weight": 1.0, "DescriptionOfGoods": "Baby Food, Document",     "GoodsValue": 1000.0, "NumberOfPieces": 1, "ProductGroup": "Document", "ServiceType": "ONP"}
+}
+Sample Response:
+{
+  "rateDetails": [
+   { "Rate": 220.00, "Remote": 0.00, "FuelSurcharge": 0.00, "ProductSurcharge": 0.00, "Insurance": 0.00, "COD": 0.00, "VAT": 0.00, "ChargeVAT": 0.00, "Total": 220.00}
+  ],
+  "status": 200,
+  "message": "Rate Details Fetched Successfully",
+  "nextPage": 0
+}
+
+
+
+
+Create Pickup
+MethodPOSTPath/CreatePickupAuthenticationAPIKEYDescriptionSchedules a pickup from the merchant location.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "PickupRequest": { "PickupRequestDateTime": "2025-06-18T12:00", "VehicleType": "Van", "Remarks": "" }
+}
+Sample Response:
+{
+  "data": null,
+  "status": 400,
+  "message": "You have no shipment to finalized shipment for pickup",
+  "nextPage": 0
+}
+
+Cancel Pickup
+MethodPOSTPath/CancelPickupAuthenticationAPIKEYDescriptionCancels a previously scheduled pickup.Sample Request:
+{
+  "APIKEY": "YOUR_API_KEY",
+  "PickupRequest": { "PickupReference": "49333024" }
+}
+Sample Response:
+{
+  "status": 200,
+  "message": "Pickup Request Successfully Cancelled"
+}
+
+
+5. Error Reference
+HTTPstatusTypical messageLikely Cause / Fix400400Invalid API keyWrong / inactive APIKEY400400Missing field: CityInvalid payload401401UnauthorizedKey not authorized404404Waybill not foundWrong or stale waybill429429Rate limit exceededThrottle requests500500Internal server errorTransient; retry6. Quick‑start cURL
+# List cities
+curl -X GET https://developer.expoexpressnp.com/v1/Cities
+
+# Quote 1 kg Document
+curl -X POST https://developer.expoexpressnp.com/v1/DomesticRateCalculation \
+     -H "Content-Type: application/json" \
+     -d @rate-request.json
+
+# Create a shipment
+curl -X POST https://developer.expoexpressnp.com/v1/CreateShipments \
+     -H "Content-Type: application/json" \
+     -d @create-shipments.json
+7. Change Log
+DateVersionNotes2025‑06‑181.0First public specification2025‑07‑221.1First Updated public specification
+
+
+
+
+
+
+
+
+
+
+
+
